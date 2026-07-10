@@ -1,0 +1,29 @@
+# Documentation files
+*.docx
+*.doc
+*.png
+*.jpg
+*.jpeg
+
+# System files
+.DS_Store
+Thumbs.db
+~$*
+
+# Node modules (for root level if needed)
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
