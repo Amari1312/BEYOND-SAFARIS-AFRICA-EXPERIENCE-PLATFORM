@@ -1,5 +1,11 @@
 import Image from "next/image";
+import Image from "next/image";
+import { CalendarDays, Map, Search, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ExperienceCard } from "@/components/experience-card";
+import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
+import { categories, experiences } from "@/data/mock";
 
 export default function Home() {
   return (
