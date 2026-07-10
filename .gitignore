@@ -1,9 +1,6 @@
 # Documentation files
 *.docx
 *.doc
-*.png
-*.jpg
-*.jpeg
 
 # System files
 .DS_Store
