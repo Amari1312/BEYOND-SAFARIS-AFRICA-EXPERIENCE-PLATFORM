@@ -1,10 +1,16 @@
 import Image from "next/image";
+import { CalendarDays, Map, Search, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ExperienceCard } from "@/components/experience-card";
+import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
+import { categories, experiences } from "@/data/mock";
+import { SearchBar } from "@/components/SearchBar";
 
 export default function Home() {
   return (
     <div className="min-h-screen">
-      
+
       <main>
         <section className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
           <Image
@@ -26,18 +32,25 @@ export default function Home() {
                 Book wildlife drives, coastal escapes, cultural walks, and host-led adventures with transparent
                 pricing and trusted local operators.
               </p>
-              
+
               <div className="text-slate-100 gap-6">
                 <Button className="mt-8 w-fit" href="/signup" variant="primary">Register Now</Button>
-                <Button className="mt-8 w-fit" href="/login" variant="primary">Log In</Button>
-                
+                <Button className="mt-8 w-fit ml-4" href="/login" variant="secondary">Log In</Button>
               </div>
             </div>
           </div>
+          
+          {/* Search Bar section covering the bottom of hero */}
+          <div className="absolute bottom-0 left-0 w-full transform translate-y-1/2">
+            <SearchBar />
+          </div>
         </section>
-
+        
+        {/* Added margin to clear search bar */}
+        <section className="mt-32">
+        </section>
       </main>
-  
+
     </div>
   );
 }

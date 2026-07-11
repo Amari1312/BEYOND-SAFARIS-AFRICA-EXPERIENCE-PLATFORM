@@ -12,29 +12,29 @@ Kenya and East Africa are rich in immersive travel experiences, but discovery is
 - Browse experience listings and detailed views with pricing, location, ratings, and host information.
 - Support travelers with authentication, profile access, and trip-planning flows.
 - Provide business and admin-facing views for experience and booking management.
-- Include AI-assisted support and payment-route scaffolding for future booking expansion.
+- Included AI-assisted support for travel curation (powered by Gemini API) and scaffolded payment routes (M-Pesa, Visa) for future booking expansion.
 
 ## Core technologies
 
-- Frontend: Next.js 16, React 19, TypeScript, Tailwind CSS
-- UI libraries: lucide-react, react-icons
-- Backend and data: Firebase Authentication, Firestore, Storage
-- Seeding: Node.js and Firebase Admin SDK
-- Tooling: ESLint and Next.js build pipeline
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
+- **UI libraries**: lucide-react, react-icons
+- **Backend & Data**: Firebase Authentication, Firestore, Storage
+- **AI Agent**: Gemini API integration for a conversational travel assistant
+- **Tooling**: ESLint and Next.js build pipeline
 
 ## Repository structure
 
+This project uses a unified standard Next.js fullstack layout. All source code, components, and API routes reside within the `src/` directory.
+
 ```text
-backend/                    # Firebase Admin seeding scripts and Firestore setup
-frontend/beyond-safari/    # Main Next.js application
+src/
+  app/         # Next.js app router (pages, layouts, api routes)
+  components/  # Reusable UI components
+  data/        # Mock data resources
+  types/       # TypeScript type definitions
+  utils/       # Helper functions (Firebase initialization, etc.)
+public/        # Static assets (images, fonts, icons)
 ```
-
-The main application lives under the frontend directory and includes:
-
-- app routes for home, experiences, login, signup, profile, and dashboard views
-- reusable UI components and experience cards
-- Firebase integration for authentication and persistence
-- mock and seeded data for experience discovery and demo flows
 
 ## Prerequisites
 
@@ -42,14 +42,15 @@ Before you begin, make sure you have:
 
 - Node.js 20 or newer
 - npm 10 or newer
-- A Firebase project with Authentication, Firestore, and Storage enabled
-- Optional: a service account JSON file for Firebase Admin seeding
+- A Firebase project with Authentication and Firestore enabled
+- A Gemini API Key for the AI assistant functionality
 
 ## Environment variables
 
-Create a .env.local file inside the frontend application directory and add the Firebase values for your project:
+Create a `.env.local` file inside the root directory and add the following keys for your project:
 
 ```env
+# Firebase Configuration
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
@@ -57,14 +58,34 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
+
+# Gemini API
+NEXT_PUBLIC_GEMINI_API_KEY=
+
+# M-Pesa API Keys (Optional for local testing)
+MPESA_CONSUMER_KEY_PROD=
+MPESA_CONSUMER_SECRET_PROD=
+MPESA_PASSKEY_PROD=
+MPESA_SHORTCODE_PROD=
+
+MPESA_CONSUMER_KEY_SANDBOX=
+MPESA_CONSUMER_SECRET_SANDBOX=
+MPESA_PASSKEY_SANDBOX=
+MPESA_SHORTCODE_SANDBOX=
+
+# Visa API Keys (Optional for local testing)
+VISA_API_KEY_PROD=
+VISA_SHARED_SECRET_PROD=
+
+VISA_API_KEY_SANDBOX=
+VISA_SHARED_SECRET_SANDBOX=
 ```
 
 ## Local development
 
-1. Install frontend dependencies:
+1. Install dependencies:
 
 ```bash
-cd frontend/beyond-safari
 npm install
 ```
 
@@ -74,39 +95,28 @@ npm install
 npm run dev
 ```
 
-3. Open http://localhost:3000 in your browser.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Backend seeding
 
-The backend folder includes a Firestore seeding script for sample users, experiences, bookings, and related collections.
+A mock data seeding script is provided to quickly populate your Firestore database with sample experiences and events.
 
-1. Install backend dependencies:
-
-```bash
-cd backend
-npm install
-```
-
-2. Run the seed script:
+Run the seed script from the root of the project:
 
 ```bash
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/serviceAccount.json npm run seed
+node seed-mock-data.js
 ```
-
-If you are using Application Default Credentials instead of a service account file, you can run the script without the environment variable and rely on your local Firebase authentication setup.
 
 ## Available scripts
 
-From the frontend application directory:
-
-- npm run dev — start the local development server
-- npm run build — create a production build
-- npm run start — run the production build locally
-- npm run lint — run the linter
+- `npm run dev` — start the local development server
+- `npm run build` — create a production build
+- `npm run start` — run the production build locally
+- `npm run lint` — run the linter
 
 ## Current project status
 
-This repository is currently an MVP-style implementation. The experience discovery experience is already well represented in the UI, while authentication and data persistence are connected to Firebase. Some booking and payment flows are scaffolded and may require additional backend work before full production use.
+This repository is currently an MVP-style implementation. The experience discovery interface is well-represented in the UI, while authentication and data persistence are fully connected to Firebase. Booking and payment flows are scaffolded via Next.js API routes, supporting production and sandbox fallback logic.
 
 ## Contributing
 
@@ -115,4 +125,3 @@ Contributions are welcome. If you plan to make changes, please create a focused 
 ## License
 
 A project license has not been defined yet. If you intend to publish or distribute this application, add an appropriate license file before release.
-

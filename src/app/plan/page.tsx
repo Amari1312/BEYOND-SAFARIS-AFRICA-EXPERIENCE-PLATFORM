@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   CalendarDays,
@@ -13,8 +13,9 @@ import { FormField } from "@/components/form-field";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { ExperienceCard } from "@/components/experience-card";
-import { events, experiences } from "@/data/mock";
+import { getExperiences, getEvents } from "@/utils/firebase-data";
 import { Footer } from "@/components/footer";
+import type { Experience } from "@/types";
 
 const preferenceOptions = ["Beaches", "Culture", "Adventure", "Food", "Wildlife", "Scenic"];
 
@@ -50,6 +51,23 @@ const initialForm = {
 export default function PlanPage() {
   const [form, setForm] = useState(initialForm);
   const [selectedPreference, setSelectedPreference] = useState("Adventure");
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const [expData, eventData] = await Promise.all([
+        getExperiences(),
+        getEvents(),
+      ]);
+      setExperiences(expData);
+      setEvents(eventData);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -265,9 +283,19 @@ export default function PlanPage() {
             </Button>
           </div>
           <div className="mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {experiences.slice(0, 3).map((experience) => (
-              <ExperienceCard key={experience.id} experience={experience} />
-            ))}
+            {loading ? (
+              <div className="col-span-full text-center py-12 text-white">
+                <p>Loading experiences...</p>
+              </div>
+            ) : experiences.length > 0 ? (
+              experiences.slice(0, 3).map((experience) => (
+                <ExperienceCard key={experience.id} experience={experience} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-white">
+                <p>No experiences available yet</p>
+              </div>
+            )}
           </div>
         </section>
 
@@ -278,23 +306,33 @@ export default function PlanPage() {
               Upcoming events
             </div>
             <div className="mt-5 space-y-4">
-              {events.slice(0, 3).map((event) => (
-                <div key={event.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <h3 className="font-semibold text-slate-950">{event.title}</h3>
-                      <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
-                        <MapPin size={14} />
-                        {event.location}
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                      {event.date}
-                    </span>
-                  </div>
-                  <p className="mt-3 text-sm text-slate-600">{event.description}</p>
+              {loading ? (
+                <div className="text-center py-6 text-slate-600">
+                  <p>Loading events...</p>
                 </div>
-              ))}
+              ) : events.length > 0 ? (
+                events.slice(0, 3).map((event) => (
+                  <div key={event.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-semibold text-slate-950">{event.title}</h3>
+                        <p className="mt-1 flex items-center gap-2 text-sm text-slate-600">
+                          <MapPin size={14} />
+                          {event.location}
+                        </p>
+                      </div>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
+                        {event.date}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-600">{event.description}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-slate-600">
+                  <p>No events available yet</p>
+                </div>
+              )}
             </div>
           </div>
 

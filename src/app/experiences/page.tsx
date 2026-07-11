@@ -1,10 +1,27 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { ExperienceCard } from "@/components/experience-card";
-import { experiences } from "@/data/mock";
+import { getExperiences } from "@/utils/firebase-data";
+import type { Experience } from "@/types";
 
 export default function ExperiencesPage() {
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      setLoading(true);
+      const data = await getExperiences();
+      setExperiences(data);
+      setLoading(false);
+    };
+    fetchExperiences();
+  }, []);
+
   return (
     <div className="min-h-screen border-t border-green-500 bg-stone-50 ">
       <Navbar />
@@ -22,9 +39,19 @@ export default function ExperiencesPage() {
         </div>
 
         <section className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {experiences.map((experience) => (
-            <ExperienceCard key={experience.id} experience={experience} />
-          ))}
+          {loading ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-slate-600">Loading experiences...</p>
+            </div>
+          ) : experiences.length > 0 ? (
+            experiences.map((experience) => (
+              <ExperienceCard key={experience.id} experience={experience} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-slate-600">No experiences available yet</p>
+            </div>
+          )}
         </section>
       </main>
       <Footer />

@@ -2,45 +2,62 @@
 
 import Link from "next/link";
 import { LogIn } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
+import { useState } from "react";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "@/utils/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/utils/firebase";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
-
+    setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/profile");
     } catch (err: any) {
-      setError(err.message || "Failed to log in");
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
-    setLoading(true);
     setError("");
-
+    setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+      // Check if user exists in Firestore
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName,
+          email: user.email,
+          role: "Tourist", // Default
+          createdAt: new Date().toISOString(),
+        });
+      }
+      
       router.push("/profile");
     } catch (err: any) {
-      setError(err.message || "Failed to log in with Google");
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -58,12 +75,15 @@ export default function LoginPage() {
         </>
       }
     >
-      <form onSubmit={handleEmailLogin} className="grid gap-4">
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-teal-600 hover:text-teal-700 disabled:opacity-50"
+      <div className="grid gap-4">
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        
+        <Button 
+          type="button" 
+          onClick={handleGoogleLogin} 
+          disabled={loading} 
+          variant="secondary" 
+          className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-teal-600 hover:text-teal-700"
         >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
             <path
@@ -84,7 +104,7 @@ export default function LoginPage() {
             />
           </svg>
           Continue with Google
-        </button>
+        </Button>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -95,37 +115,36 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <FormField
-          label="Email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <FormField
-          label="Password"
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 text-slate-600">
-            <input type="checkbox" className="size-4 rounded border-slate-300" />
-            Remember me
-          </label>
-          <Link href="/forgot-password" className="font-semibold text-teal-700">
-            Forgot password?
-          </Link>
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={loading} className="w-full">
-          <LogIn size={18} />
-          {loading ? "Logging in..." : "Log in"}
-        </Button>
-      </form>
+        <form onSubmit={handleEmailLogin} className="grid gap-4">
+          <FormField 
+            label="Email" 
+            type="email" 
+            placeholder="you@example.com" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <FormField 
+            label="Password" 
+            type="password" 
+            placeholder="Enter your password" 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <div className="flex items-center justify-between text-sm">
+            <label className="flex items-center gap-2 text-slate-600">
+              <input type="checkbox" className="size-4 rounded border-slate-300" />
+              Remember me
+            </label>
+            <Link href="/forgot-password" className="font-semibold text-teal-700">
+              Forgot password?
+            </Link>
+          </div>
+          <Button type="submit" disabled={loading} className="w-full">
+            <LogIn size={18} />
+            {loading ? "Logging in..." : "Log in"}
+          </Button>
+        </form>
+      </div>
     </AuthCard>
   );
 }
