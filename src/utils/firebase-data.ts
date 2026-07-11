@@ -1,6 +1,7 @@
 import { collection, query, getDocs, doc, getDoc, onSnapshot, Query, DocumentSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Experience, Booking } from "@/types";
+import type { UserProfile } from "@/types/user";
 
 /**
  * Fetch all experiences from Firestore
