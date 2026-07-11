@@ -8,7 +8,7 @@ export function AuthCard({
   footer,
 }: {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   children: ReactNode;
   footer: ReactNode;
 }) {
@@ -27,7 +27,7 @@ export function AuthCard({
         </div>
         <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
           <h1 className="text-2xl font-bold text-slate-950">{title}</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>
+          {subtitle && <p className="mt-2 text-sm leading-6 text-slate-600">{subtitle}</p>}
           <div className="mt-6">{children}</div>
         </section>
         <div className="mt-6 text-center text-sm text-slate-600">{footer}</div>
