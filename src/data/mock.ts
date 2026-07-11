@@ -19,7 +19,7 @@ export const experiences: Experience[] = [
     rating: 4.9,
     reviews: 184,
     duration: "6 hours",
-    image: "/images/beach.jfif",
+    image: "/images/beach.jpg",
     tags: ["Sunset", "Photography", "Local guide"],
     description:
       "Relax on powdery shores, enjoy a guided beach walk, and watch the coastline glow at golden hour.",
@@ -35,7 +35,7 @@ export const experiences: Experience[] = [
     rating: 4.8,
     reviews: 96,
     duration: "3 hours",
-    image: "/images/shanga.jfif",
+    image: "/images/shanga.jpg",
     tags: ["UNESCO", "Architecture", "Food tasting"],
     description:
       "Explore carved doors, seafront markets, old mosques, and family-run food stops through the living history of Lamu.",
@@ -51,7 +51,7 @@ export const experiences: Experience[] = [
     rating: 4.95,
     reviews: 121,
     duration: "Full day",
-    image: "/images/sea.jfif",
+    image: "/images/sea.jpg",
     tags: ["Elephants", "Kilimanjaro views", "Conservation"],
     description:
       "Spend a day near Amboseli's wetlands learning elephant behavior and conservation practices from field researchers.",
@@ -83,7 +83,7 @@ export const experiences: Experience[] = [
     rating: 4.8,
     reviews: 67,
     duration: "5 hours",
-    image: "/images/thompson water falls.jfif",
+    image: "/images/thompson-water-falls.jpg",
     tags: ["Waterfalls", "Hiking", "Nature"],
     description:
       "Take a scenic walk to the waterfall lookout, enjoy picnic views, and capture dramatic landscapes with your guide.",
@@ -99,7 +99,7 @@ export const experiences: Experience[] = [
     rating: 4.7,
     reviews: 58,
     duration: "4 hours",
-    image: "/images/rift valley.jfif",
+    image: "/images/rift-valley.jpg",
     tags: ["Sunrise", "Picnic", "Photography"],
     description:
       "Watch dawn spill over the valley floor, enjoy a curated breakfast setup, and explore nearby viewpoints.",
@@ -115,7 +115,7 @@ export const experiences: Experience[] = [
     rating: 4.9,
     reviews: 89,
     duration: "Full day",
-    image: "/images/turkana.jfif",
+    image: "/images/turkana.jpg",
     tags: ["Traditions", "Storytelling", "Community"],
     description:
       "Join local hosts for music, storytelling, and a deeper understanding of Turkana traditions and daily life.",
@@ -131,7 +131,7 @@ export const experiences: Experience[] = [
     rating: 4.6,
     reviews: 76,
     duration: "3 hours",
-    image: "/images/foods.jfif",
+    image: "/images/foods.jpg",
     tags: ["Street food", "Market", "Local flavors"],
     description:
       "Taste signature bites across Nairobi's lively streets while learning about regional ingredients and cooking traditions.",
@@ -147,7 +147,7 @@ export const experiences: Experience[] = [
     rating: 4.9,
     reviews: 112,
     duration: "5 hours",
-    image: "/images/dances.jfif",
+    image: "/images/dances.jpg",
     tags: ["Dance", "Village stay", "Traditions"],
     description:
       "Experience Maasai song, dance, and community visits with hosts who share their stories and traditions warmly.",
@@ -162,7 +162,7 @@ export const events = [
     title: "Sunset Beach Bonfire",
     date: "Aug 16, 2026",
     location: "Diani Beach",
-    image: "/images/beach.jfif",
+    image: "/images/beach.jpg",
     description: "Live acoustic sets, lantern-lit dining, and coastal stargazing.",
   },
   {
@@ -170,7 +170,7 @@ export const events = [
     title: "Museum Night Tour",
     date: "Aug 22, 2026",
     location: "Nairobi",
-    image: "/images/museum.jfif",
+    image: "/images/museum.jpg",
     description: "Evening entry to heritage halls, local storytellers, and guided exhibits.",
   },
   {
@@ -178,7 +178,7 @@ export const events = [
     title: "Swahili Evening Market",
     date: "Aug 29, 2026",
     location: "Lamu",
-    image: "/images/shanga.jfif",
+    image: "/images/shanga.jpg",
     description: "Street food, artisan stalls, and music along the old harbor.",
   },
   {
@@ -186,7 +186,7 @@ export const events = [
     title: "Maasai Dance Festival",
     date: "Sep 05, 2026",
     location: "Narok",
-    image: "/images/dances.jfif",
+    image: "/images/dances.jpg",
     description: "An evening of rhythm, traditional attire, and cultural performances.",
   },
   {
@@ -194,7 +194,7 @@ export const events = [
     title: "Waterfall Adventure Day",
     date: "Sep 12, 2026",
     location: "Nyahururu",
-    image: "/images/thompson water falls.jfif",
+    image: "/images/thompson-water-falls.jpg",
     description: "A guided day out with short hikes and scenic picnic stops.",
   },
   {
@@ -202,7 +202,7 @@ export const events = [
     title: "Coastal Photography Walk",
     date: "Sep 19, 2026",
     location: "Mombasa",
-    image: "/images/photos.jfif",
+    image: "/images/photos.jpg",
     description: "Golden hour photography with local creatives and shoreline views.",
   },
   {
@@ -210,7 +210,7 @@ export const events = [
     title: "Food Market Festival",
     date: "Sep 26, 2026",
     location: "Nairobi",
-    image: "/images/foods.jfif",
+    image: "/images/foods.jpg",
     description: "A tasting journey of signature dishes, desserts, and local coffee.",
   },
   {
@@ -218,7 +218,7 @@ export const events = [
     title: "Wildlife Safari Night",
     date: "Oct 03, 2026",
     location: "Amboseli",
-    image: "/images/sea.jfif",
+    image: "/images/sea.jpg",
     description: "A guided twilight safari with storytelling and stargazing.",
   },
   {
@@ -226,7 +226,7 @@ export const events = [
     title: "Heritage Craft Fair",
     date: "Oct 10, 2026",
     location: "Kisumu",
-    image: "/images/arefact.jfif",
+    image: "/images/arefact.jpg",
     description: "Meet local artisans, explore handmade treasures, and enjoy live music.",
   },
 ];
