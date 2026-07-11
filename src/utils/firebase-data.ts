@@ -35,7 +35,7 @@ export function onExperiencesChange(callback: (experiences: Experience[]) => voi
     });
   } catch (error) {
     console.error("Error subscribing to experiences:", error);
-    return () => {};
+    return () => { };
   }
 }
 
@@ -92,7 +92,7 @@ export function onEventsChange(callback: (events: any[]) => void) {
     });
   } catch (error) {
     console.error("Error subscribing to events:", error);
-    return () => {};
+    return () => { };
   }
 }
 
@@ -134,7 +134,7 @@ export function onUserBookingsChange(userId: string, callback: (bookings: Bookin
     });
   } catch (error) {
     console.error("Error subscribing to bookings:", error);
-    return () => {};
+    return () => { };
   }
 }
 
@@ -175,7 +175,7 @@ export function onUserTripsChange(userId: string, callback: (trips: any[]) => vo
     });
   } catch (error) {
     console.error("Error subscribing to trips:", error);
-    return () => {};
+    return () => { };
   }
 }
 
@@ -215,7 +215,7 @@ export function onUserProfileChange(userId: string, callback: (user: any) => voi
     });
   } catch (error) {
     console.error("Error subscribing to user profile:", error);
-    return () => {};
+    return () => { };
   }
 }
 
@@ -276,6 +276,6 @@ export function onBusinessExperiencesChange(businessId: string, callback: (exper
     });
   } catch (error) {
     console.error("Error subscribing to business experiences:", error);
-    return () => {};
+    return () => { };
   }
 }
