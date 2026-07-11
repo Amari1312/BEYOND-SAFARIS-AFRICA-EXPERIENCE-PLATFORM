@@ -4,19 +4,17 @@ import { useEffect, useState } from "react";
 import { CalendarCheck, Heart, MessageSquare, Star, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/footer";
-import { ExperienceCard } from "@/components/experience-card";
 import { Navbar } from "@/components/navbar";
 import { StatCard } from "@/components/stat-card";
-import { experiences } from "@/data/mock"; // Keep mock experiences for wishlist until wishlist collection is built
 import { auth } from "@/utils/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { getUserProfile, getUserBookings } from "@/utils/firebase-data";
 import { useRouter } from "next/navigation";
-import type { Booking } from "@/types";
+import type { Booking, UserProfile } from "@/types";
 
 export default function UserDashboardPage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -64,7 +62,7 @@ export default function UserDashboardPage() {
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-4">
           <StatCard label="Bookings" value={userBookings.length.toString()} detail={`${userBookings.filter(b => b.status === "Pending" || b.status === "Confirmed").length} upcoming trips`} icon={<CalendarCheck size={21} />} />
-          <StatCard label="Wishlist" value="3" detail="Saved experiences" icon={<Heart size={21} />} />
+          <StatCard label="Wishlist" value="0" detail="Saved experiences" icon={<Heart size={21} />} />
           <StatCard label="Reviews" value="0" detail="Average rating 0.0" icon={<Star size={21} />} />
           <StatCard label="Messages" value="0" detail="Open host chats" icon={<MessageSquare size={21} />} />
         </div>

@@ -5,7 +5,7 @@ import { Heart, Menu, Search, User, LogOut } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/utils/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut, type User as FirebaseUser } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -16,7 +16,7 @@ type NavbarProps = {
 
 export function Navbar({ variant = "default", profileHref }: NavbarProps) {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(variant === "admin");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -48,10 +48,6 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
   const links = isAdmin
     ? [
         { href: "/admin", label: "Overview" },
-        { href: "/admin/users", label: "Users" },
-        { href: "/admin/approvals", label: "Approvals" },
-        { href: "/admin/reports", label: "Reports" },
-        { href: "/admin/roles", label: "Settings" },
       ]
     : [
         { href: user ? "/profile" : "/", label: "Home" },

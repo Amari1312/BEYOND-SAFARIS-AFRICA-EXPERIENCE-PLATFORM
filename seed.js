@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const admin = require('firebase-admin');
 
 // Initialize admin SDK. It will use GOOGLE_APPLICATION_CREDENTIALS if set,

@@ -21,7 +21,9 @@ export default function ProfileRedirectPage() {
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          if (userData.role === "BusinessOwner") {
+          if (userData.role === "Admin") {
+            router.push("/admin");
+          } else if (userData.role === "BusinessOwner") {
             router.push("/business");
           } else {
             router.push("/user/profile");

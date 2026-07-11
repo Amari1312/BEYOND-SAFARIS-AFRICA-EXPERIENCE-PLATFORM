@@ -33,7 +33,7 @@ export default function LoginPage() {
     }
   };
 
-  // Handle redirect result on page load
+  // Handle Google redirect result when user returns to this page
   useEffect(() => {
     setLoading(true);
     getRedirectResult(auth)
@@ -52,14 +52,15 @@ export default function LoginPage() {
             });
           }
           router.push("/profile");
+        } else {
+          setLoading(false);
         }
       })
       .catch((err) => {
-        if (err.code !== "auth/popup-closed-by-user") {
-          setError(err.message);
-        }
-      })
-      .finally(() => setLoading(false));
+        console.error("Google redirect error:", err);
+        setError("Google sign-in failed. Please try again or use email.");
+        setLoading(false);
+      });
   }, [router]);
 
   const handleGoogleLogin = () => {

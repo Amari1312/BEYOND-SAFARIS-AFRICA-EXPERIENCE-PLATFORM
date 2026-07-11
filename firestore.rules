@@ -3,59 +3,65 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
     function isAdmin() {
-      return isSignedIn() && request.auth.token.role == 'admin';
+      return isSignedIn() && getUserRole() == 'Admin';
     }
 
     function isBusinessOwner() {
-      return isSignedIn() && request.auth.token.role == 'businessOwner';
-    }
-
-    function isUser() {
-      return isSignedIn() && request.auth.token.role == 'user';
+      return isSignedIn() && getUserRole() == 'BusinessOwner';
     }
 
     function isSameUser(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function ownsBusiness(businessId) {
-      let business = get(/databases/$(database)/documents/businesses/$(businessId));
-      return business.data.ownerId == request.auth.uid;
+    function ownsBusinessDoc(businessId) {
+      return get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
     }
 
-    // Users Collection
+    // Users Collection — allow any signed-in user to read any user (needed for getRedirectResult)
     match /users/{userId} {
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && request.auth.uid == userId;
-      allow read: if isAdmin() || isSameUser(userId);
-      allow update: if isAdmin() || (isSameUser(userId) && request.resource.data.role == resource.data.role);
+      allow update: if isAdmin() || (isSameUser(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])));
       allow delete: if isAdmin() || isSameUser(userId);
     }
 
     // Businesses Collection
     match /businesses/{businessId} {
       allow read: if isSignedIn();
-      allow create: if isBusinessOwner() && request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if isAdmin() || ownsBusiness(businessId);
+      allow create: if isSignedIn() && (isBusinessOwner() || getUserRole() == 'BusinessOwner') && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isAdmin() || ownsBusinessDoc(businessId);
     }
 
     // Experiences Collection
     match /experiences/{experienceId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && ownsBusiness(request.resource.data.businessId);
-      allow update, delete: if isAdmin() || ownsBusiness(resource.data.businessId);
+      allow read: if true;
+      allow create: if isSignedIn() && (isBusinessOwner() || getUserRole() == 'BusinessOwner') && request.resource.data.hostId == request.auth.uid;
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.hostId == request.auth.uid);
     }
 
     // Events Collection
     match /events/{eventId} {
-      allow read: if isSignedIn();
-      allow create: if isAdmin() || isBusinessOwner();
-      allow update, delete: if isAdmin() || isBusinessOwner();
+      allow read: if true;
+      allow create: if isSignedIn() && (isBusinessOwner() || isAdmin());
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.hostId == request.auth.uid);
+    }
+
+    // Bookings Collection
+    match /bookings/{bookingId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && resource.data.hostId == request.auth.uid);
+      allow update: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && resource.data.hostId == request.auth.uid);
+      allow delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
     // Trips Collection
@@ -65,57 +71,17 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
-    // Bookings Collection
-    match /bookings/{bookingId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && resource.data.businessId == request.auth.uid);
-      allow update: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && resource.data.businessId == request.auth.uid);
-      allow delete: if isAdmin() || isSameUser(resource.data.userId);
-    }
-
     // Payments Collection
     match /payments/{paymentId} {
-      allow read, create, update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid) || (isSignedIn() && resource.data.businessId == request.auth.uid);
+      allow read, create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 
     // Reviews Collection
     match /reviews/{reviewId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
-    }
-
-    // Ratings Collection
-    match /ratings/{ratingId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
-    }
-
-    // Visits Collection
-    match /visits/{visitId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if isAdmin() || isSameUser(resource.data.userId);
-    }
-
-    // Notifications Collection
-    match /notifications/{notificationId} {
-      allow read: if isAdmin() || isSameUser(resource.data.userId);
-      allow create: if isAdmin() || isBusinessOwner();
-      allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
-    }
-
-    // AI Recommendations Collection
-    match /aiRecommendations/{recommendationId} {
-      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create, update, delete: if isAdmin();
-    }
-
-    // Badges Collection
-    match /badges/{badgeId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin();
     }
 
     // Wishlists Collection
@@ -124,9 +90,37 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
-    // Chat Sessions Collection
+    // Notifications Collection
+    match /notifications/{notificationId} {
+      allow read: if isAdmin() || isSameUser(resource.data.userId);
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
+    }
+
+    // Badges, Ratings, Visits, AI Recommendations, Chat Sessions
+    match /badges/{badgeId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /ratings/{ratingId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
+    }
+
+    match /visits/{visitId} {
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if isAdmin() || isSameUser(resource.data.userId);
+    }
+
+    match /aiRecommendations/{recommendationId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
     match /chatSessions/{sessionId} {
-      allow read, create, update: if isSignedIn() && request.auth.uid in request.resource.data.participants;
+      allow read, create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
 

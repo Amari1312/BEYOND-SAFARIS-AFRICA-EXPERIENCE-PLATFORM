@@ -22,3 +22,5 @@ export type Booking = {
   status: "Confirmed" | "Pending" | "Cancelled";
   amount: number;
 };
+
+export type { UserProfile } from "./user";

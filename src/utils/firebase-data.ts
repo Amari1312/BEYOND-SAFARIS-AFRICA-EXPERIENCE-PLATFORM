@@ -182,7 +182,7 @@ export function onUserTripsChange(userId: string, callback: (trips: any[]) => vo
 /**
  * Get user profile
  */
-export async function getUserProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
     const userDoc = doc(db, "users", userId);
     const snapshot = await getDoc(userDoc);
@@ -190,7 +190,7 @@ export async function getUserProfile(userId: string) {
       return {
         id: snapshot.id,
         ...snapshot.data(),
-      };
+      } as UserProfile;
     }
     return null;
   } catch (error) {
