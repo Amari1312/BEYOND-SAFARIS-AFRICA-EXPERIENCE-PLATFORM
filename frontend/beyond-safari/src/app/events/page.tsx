@@ -1,9 +1,25 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
-import { events } from "@/data/mock";
+import { getEvents } from "@/utils/firebase-data";
 
 export default function EventsPage() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      const data = await getEvents();
+      setEvents(data);
+      setLoading(false);
+    };
+    fetchEvents();
+  }, []);
+
   return (
     <div className="min-h-screen border-t border-green-500 bg-stone-50">
       <Navbar />
@@ -17,19 +33,29 @@ export default function EventsPage() {
         </div>
 
         <section className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-          {events.map((event) => (
-            <article key={event.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="relative aspect-4/3">
-                <Image src={event.image} alt={event.title} fill className="object-cover" />
-              </div>
-              <div className="p-5">
-                <p className="text-sm font-semibold text-teal-700">{event.date}</p>
-                <h2 className="mt-2 text-xl font-semibold text-slate-950">{event.title}</h2>
-                <p className="mt-2 text-sm text-slate-600">{event.description}</p>
-                <p className="mt-4 text-sm font-medium text-slate-700">{event.location}</p>
-              </div>
-            </article>
-          ))}
+          {loading ? (
+            <div className="col-span-full text-center py-12">
+              <p className="text-slate-600">Loading events...</p>
+            </div>
+          ) : events.length > 0 ? (
+            events.map((event) => (
+              <article key={event.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="relative aspect-4/3">
+                  {event.image && <Image src={event.image} alt={event.title} fill className="object-cover" />}
+                </div>
+                <div className="p-5">
+                  <p className="text-sm font-semibold text-teal-700">{event.date}</p>
+                  <h2 className="mt-2 text-xl font-semibold text-slate-950">{event.title}</h2>
+                  <p className="mt-2 text-sm text-slate-600">{event.description}</p>
+                  <p className="mt-4 text-sm font-medium text-slate-700">{event.location}</p>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-slate-600">No events available yet</p>
+            </div>
+          )}
         </section>
       </main>
       <Footer />

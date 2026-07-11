@@ -3,6 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
@@ -15,100 +16,121 @@ service cloud.firestore {
       return isSignedIn() && request.auth.token.role == 'businessOwner';
     }
 
+    function isUser() {
+      return isSignedIn() && request.auth.token.role == 'user';
+    }
+
     function isSameUser(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     function ownsBusiness(businessId) {
-      return isSignedIn() && get(/databases/$(database)/documents/businesses/$(businessId)).data.ownerId == request.auth.uid;
+      let business = get(/databases/$(database)/documents/businesses/$(businessId));
+      return business.data.ownerId == request.auth.uid;
     }
 
+    // Users Collection
     match /users/{userId} {
-      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.userId == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId;
       allow read: if isAdmin() || isSameUser(userId);
-      allow update: if isAdmin() || (isSameUser(userId) && request.resource.data.userId == userId && request.resource.data.role == resource.data.role);
+      allow update: if isAdmin() || (isSameUser(userId) && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin() || isSameUser(userId);
     }
 
+    // Businesses Collection
     match /businesses/{businessId} {
       allow read: if isSignedIn();
       allow create: if isBusinessOwner() && request.resource.data.ownerId == request.auth.uid;
       allow update, delete: if isAdmin() || ownsBusiness(businessId);
     }
 
+    // Experiences Collection
     match /experiences/{experienceId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && ownsBusiness(request.resource.data.businessId);
-      allow update, delete: if isAdmin() || ownsBusiness(experienceId);
+      allow update, delete: if isAdmin() || ownsBusiness(resource.data.businessId);
     }
 
+    // Events Collection
     match /events/{eventId} {
       allow read: if isSignedIn();
       allow create: if isAdmin() || isBusinessOwner();
       allow update, delete: if isAdmin() || isBusinessOwner();
     }
 
+    // Trips Collection
     match /trips/{tripId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // Bookings Collection
     match /bookings/{bookingId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && request.auth.uid == resource.data.businessId);
-      allow update: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && request.auth.uid == resource.data.businessId);
+      allow read: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && resource.data.businessId == request.auth.uid);
+      allow update: if isAdmin() || isSameUser(resource.data.userId) || (isSignedIn() && resource.data.businessId == request.auth.uid);
       allow delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // Payments Collection
     match /payments/{paymentId} {
-      allow read, create, update: if isAdmin() || (isSignedIn() && request.resource.data.userId == request.auth.uid) || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow read, create, update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid) || (isSignedIn() && resource.data.businessId == request.auth.uid);
       allow delete: if isAdmin();
     }
 
+    // Reviews Collection
     match /reviews/{reviewId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // Ratings Collection
     match /ratings/{ratingId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // Visits Collection
     match /visits/{visitId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // Notifications Collection
     match /notifications/{notificationId} {
       allow read: if isAdmin() || isSameUser(resource.data.userId);
       allow create: if isAdmin() || isBusinessOwner();
       allow update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // AI Recommendations Collection
     match /aiRecommendations/{recommendationId} {
       allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create, update, delete: if isAdmin();
     }
 
+    // Badges Collection
     match /badges/{badgeId} {
       allow read: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
+    // Wishlists Collection
     match /wishlists/{wishlistId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isAdmin() || isSameUser(resource.data.userId);
     }
 
+    // Chat Sessions Collection
     match /chatSessions/{sessionId} {
       allow read, create, update: if isSignedIn() && request.auth.uid in request.resource.data.participants;
       allow delete: if isAdmin();
     }
 
+    // Default deny all
     match /{document=**} {
       allow read, write: if false;
     }

@@ -1,10 +1,50 @@
+"use client";
+
 import Link from "next/link";
 import { LogIn } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "@/utils/firebase";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push("/profile");
+    } catch (err: any) {
+      setError(err.message || "Failed to log in");
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push("/profile");
+    } catch (err: any) {
+      setError(err.message || "Failed to log in with Google");
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthCard
       title="Welcome back"
@@ -18,8 +58,13 @@ export default function LoginPage() {
         </>
       }
     >
-      <form className="grid gap-4">
-        <Button href="/profile" variant="secondary" className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-teal-600 hover:text-teal-700">
+      <form onSubmit={handleEmailLogin} className="grid gap-4">
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-teal-600 hover:text-teal-700 disabled:opacity-50"
+        >
           <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
             <path
               fill="#4285F4"
@@ -39,7 +84,7 @@ export default function LoginPage() {
             />
           </svg>
           Continue with Google
-        </Button>
+        </button>
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
@@ -50,8 +95,22 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <FormField label="Email" type="email" placeholder="you@example.com" />
-        <FormField label="Password" type="password" placeholder="Enter your password" />
+        <FormField
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <FormField
+          label="Password"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
         <div className="flex items-center justify-between text-sm">
           <label className="flex items-center gap-2 text-slate-600">
             <input type="checkbox" className="size-4 rounded border-slate-300" />
@@ -61,9 +120,10 @@ export default function LoginPage() {
             Forgot password?
           </Link>
         </div>
-        <Button href="/profile" className="w-full">
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        <Button type="submit" disabled={loading} className="w-full">
           <LogIn size={18} />
-          Log in
+          {loading ? "Logging in..." : "Log in"}
         </Button>
       </form>
     </AuthCard>

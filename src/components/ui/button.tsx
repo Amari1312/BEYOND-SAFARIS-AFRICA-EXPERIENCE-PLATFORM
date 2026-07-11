@@ -21,7 +21,7 @@ export function Button({
   className = "",
   ...props
 }: ButtonProps) {
-  const classes = `inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${variants[variant]} ${className}`;
+  const classes = `inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${variants[variant]} ${className} disabled:opacity-50 disabled:cursor-not-allowed`;
 
   if (href) {
     return (

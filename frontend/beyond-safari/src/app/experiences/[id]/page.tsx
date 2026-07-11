@@ -1,21 +1,54 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
-import { experiences } from "@/data/mock";
+import { getExperienceById } from "@/utils/firebase-data";
 import { CalendarDays, Heart, MapPin, ShieldCheck, Star, Users } from "lucide-react";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import type { Experience } from "@/types";
 
-export function generateStaticParams() {
-  return experiences.map((experience) => ({ id: experience.id }));
-}
+export default function ExperienceDetailPage() {
+  const params = useParams();
+  const id = params.id as string;
+  const [experience, setExperience] = useState<Experience | null>(null);
+  const [loading, setLoading] = useState(true);
 
-export default async function ExperienceDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const experience = experiences.find((item) => item.id === id);
+  useEffect(() => {
+    if (!id) return;
+    const fetchExperience = async () => {
+      setLoading(true);
+      const data = await getExperienceById(id);
+      setExperience(data);
+      setLoading(false);
+    };
+    fetchExperience();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-stone-50">
+        <Navbar />
+        <main className="flex items-center justify-center min-h-[68vh]">
+          <p className="text-slate-600">Loading experience...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!experience) {
-    notFound();
+    return (
+      <div className="min-h-screen bg-stone-50">
+        <Navbar />
+        <main className="flex items-center justify-center min-h-[68vh]">
+          <p className="text-slate-600">Experience not found</p>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (

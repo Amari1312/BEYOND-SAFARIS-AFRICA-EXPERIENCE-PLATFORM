@@ -17,6 +17,8 @@ export const metadata: Metadata = {
   description: "Discover, book, and manage authentic African travel experiences.",
 };
 
+import { AIChatbot } from "@/components/AIChatbot";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-stone-50 text-slate-950">{children}</body>
+      <body className="min-h-full bg-stone-50 text-slate-950">
+        {children}
+        <AIChatbot />
+      </body>
     </html>
   );
 }
