@@ -108,7 +108,7 @@ export async function getUserBookings(userId: string): Promise<Booking[]> {
       .map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }))
+      } as any))
       .filter((b) => b.userId === userId);
     return bookings as Booking[];
   } catch (error) {
@@ -128,7 +128,7 @@ export function onUserBookingsChange(userId: string, callback: (bookings: Bookin
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }))
+        } as any))
         .filter((b) => b.userId === userId);
       callback(bookings as Booking[]);
     });
@@ -149,7 +149,7 @@ export async function getUserTrips(userId: string) {
       .map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }))
+      } as any))
       .filter((t) => t.userId === userId);
     return trips;
   } catch (error) {
@@ -169,7 +169,7 @@ export function onUserTripsChange(userId: string, callback: (trips: any[]) => vo
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }))
+        } as any))
         .filter((t) => t.userId === userId);
       callback(trips);
     });
@@ -230,7 +230,7 @@ export async function getUserBusiness(userId: string) {
       .map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }))
+      } as any))
       .find((b) => b.ownerId === userId);
     return business || null;
   } catch (error) {
@@ -250,7 +250,7 @@ export async function getBusinessExperiences(businessId: string): Promise<Experi
       .map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }))
+      } as any))
       .filter((e) => e.businessId === businessId);
     return experiences as Experience[];
   } catch (error) {
@@ -270,7 +270,7 @@ export function onBusinessExperiencesChange(businessId: string, callback: (exper
         .map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }))
+        } as any))
         .filter((e) => e.businessId === businessId);
       callback(experiences as Experience[]);
     });
