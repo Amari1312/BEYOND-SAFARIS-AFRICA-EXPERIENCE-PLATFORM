@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, type ChangeEvent } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
