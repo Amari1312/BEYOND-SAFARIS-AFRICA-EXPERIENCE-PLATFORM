@@ -29,7 +29,7 @@ export default function About() {
 
             <div className="w-full lg:w-1/2">
               <Image
-                src="/images/14 waterfalls thika.jfif"
+                src="/images/14-waterfalls-thika.jpg"
                 alt="About Us"
                 width={800}
                 height={600}

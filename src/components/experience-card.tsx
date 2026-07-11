@@ -41,7 +41,7 @@ export function ExperienceCard({ experience }: { experience: Experience }) {
         </div>
         <div className="mt-4 flex items-end justify-between">
           <p className="text-sm text-slate-500">
-            from <span className="text-xl font-bold text-slate-950">${experience.price}</span>
+            from <span className="text-xl font-bold text-slate-950">Ksh {experience.price}</span>
           </p>
           <span className="text-sm font-semibold text-teal-700">View details</span>
         </div>

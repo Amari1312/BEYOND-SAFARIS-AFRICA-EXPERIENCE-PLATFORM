@@ -265,7 +265,7 @@ export default function PlanPage() {
                 </div>
                 <div className="flex items-start gap-2 rounded-xl border border-slate-200 p-3">
                   <CheckCircle2 size={16} className="mt-0.5 text-emerald-600" />
-                  <span>Suggested budget: $250–$420 depending on lodging and transport.</span>
+                  <span>Suggested budget: Ksh 25,000–Ksh 42,000 depending on lodging and transport.</span>
                 </div>
               </div>
             </section>

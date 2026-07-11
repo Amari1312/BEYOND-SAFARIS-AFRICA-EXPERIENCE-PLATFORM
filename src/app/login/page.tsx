@@ -65,7 +65,6 @@ export default function LoginPage() {
   return (
     <AuthCard
       title="Welcome back"
-      subtitle="Access bookings, wishlists, host tools, and admin workflows from one account."
       footer={
         <>
           New to Beyond Safari?{" "}

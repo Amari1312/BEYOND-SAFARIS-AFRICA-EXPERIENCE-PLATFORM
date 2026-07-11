@@ -1,10 +1,50 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, FileText, Shield, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { StatCard } from "@/components/stat-card";
-import { experiences } from "@/data/mock";
+import { auth, db } from "@/utils/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          if (userDoc.exists() && userDoc.data().role === "Admin") {
+            setLoading(false);
+          } else {
+            router.push("/profile");
+          }
+        } catch (error) {
+          router.push("/profile");
+        }
+      } else {
+        router.push("/login");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-stone-50">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-600 border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-sm font-medium text-slate-600">Verifying admin access...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-stone-50">
       <Navbar variant="admin" />
@@ -15,41 +55,23 @@ export default function AdminDashboardPage() {
           <h1 className="mt-1 text-3xl font-bold">Platform oversight</h1>
         </div>
         <div className="mt-8 grid gap-4 md:grid-cols-4">
-          <StatCard label="Users" value="12,480" detail="283 new this week" icon={<Users size={21} />} />
-          <StatCard label="Approvals" value="17" detail="Listings awaiting review" icon={<CheckCircle2 size={21} />} />
-          <StatCard label="Reports" value="6" detail="Open moderation cases" icon={<AlertTriangle size={21} />} />
-          <StatCard label="Roles" value="4" detail="Traveler, business, admin, analyst" icon={<Shield size={21} />} />
+          <StatCard label="Users" value="0" detail="0 new this week" icon={<Users size={21} />} />
+          <StatCard label="Approvals" value="0" detail="Listings awaiting review" icon={<CheckCircle2 size={21} />} />
+          <StatCard label="Reports" value="0" detail="Open moderation cases" icon={<AlertTriangle size={21} />} />
+          <StatCard label="Roles" value="3" detail="Traveler, Business, Admin" icon={<Shield size={21} />} />
         </div>
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-xl font-semibold">Listing approval</h2>
-            <div className="mt-4 grid gap-3">
-              {experiences.map((experience) => (
-                <div key={experience.id} className="grid gap-4 rounded-lg border border-slate-200 p-4 sm:grid-cols-[1fr_auto]">
-                  <div>
-                    <p className="font-semibold">{experience.title}</p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {experience.host} · {experience.location} · ${experience.price}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="secondary">Reject</Button>
-                    <Button>Approve</Button>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-4 py-6 text-center text-sm text-slate-500">
+              No experiences awaiting approval.
             </div>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <FileText className="text-teal-700" size={28} />
             <h2 className="mt-4 text-xl font-semibold">Reports</h2>
-            <div className="mt-4 grid gap-3 text-sm">
-              {["Payment callback mismatch", "Duplicate business profile", "Review flagged for abuse"].map((report) => (
-                <div key={report} className="rounded-lg bg-stone-50 p-4">
-                  <p className="font-semibold">{report}</p>
-                  <p className="mt-1 text-slate-600">Assigned to analyst queue</p>
-                </div>
-              ))}
+            <div className="mt-4 py-6 text-center text-sm text-slate-500">
+              No open reports.
             </div>
           </div>
         </section>
@@ -67,21 +89,9 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  ["Amina Traveler", "amina@example.com", "Traveler", "Active"],
-                  ["Mara Plains Collective", "host@mara.co.ke", "Business", "Verified"],
-                  ["Njeri Admin", "admin@beyondsafari.app", "Admin", "Active"],
-                ].map(([name, email, role, status]) => (
-                  <tr key={email} className="border-b border-slate-100">
-                    <td className="py-4 font-semibold">{name}</td>
-                    <td>{email}</td>
-                    <td>{role}</td>
-                    <td>{status}</td>
-                    <td className="text-right">
-                      <Button variant="secondary">Edit</Button>
-                    </td>
-                  </tr>
-                ))}
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-slate-500">No users found.</td>
+                </tr>
               </tbody>
             </table>
           </div>

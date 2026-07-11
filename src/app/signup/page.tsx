@@ -85,7 +85,6 @@ export default function SignupPage() {
   return (
     <AuthCard
       title="Create your account"
-      subtitle="Choose traveler or business access after signup; the frontend is ready for Firebase auth roles."
       footer={
         <>
           Already have an account?{" "}

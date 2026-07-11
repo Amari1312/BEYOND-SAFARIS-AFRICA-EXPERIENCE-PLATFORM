@@ -106,7 +106,7 @@ export default function UserDashboardPage() {
                             {booking.status}
                           </span>
                         </td>
-                        <td className="text-right font-semibold">${booking.amount}</td>
+                        <td className="text-right font-semibold">Ksh {booking.amount}</td>
                       </tr>
                     ))
                   )}
@@ -128,17 +128,15 @@ export default function UserDashboardPage() {
                 <span className="font-semibold text-slate-900">Phone:</span> {profile?.phoneNumber || "Not provided"}
               </p>
               <p>
-                <span className="font-semibold text-slate-900">Preference:</span> Safari and Coast
+                <span className="font-semibold text-slate-900">Preference:</span> {profile?.preference || "None set"}
               </p>
             </div>
           </aside>
         </section>
         <section className="mt-8">
           <h2 className="text-xl font-semibold">Wishlist</h2>
-          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {experiences.slice(0, 3).map((experience) => (
-              <ExperienceCard key={experience.id} experience={experience} />
-            ))}
+          <div className="mt-4 text-sm text-slate-500 bg-white rounded-lg p-6 border border-slate-200">
+            Your wishlist is currently empty. Explore experiences to add them here!
           </div>
         </section>
       </main>
