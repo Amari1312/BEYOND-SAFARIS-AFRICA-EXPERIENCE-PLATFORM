@@ -5,8 +5,8 @@ import { UserPlus } from "lucide-react";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/form-field";
-import { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { useState, useEffect } from "react";
+import { createUserWithEmailAndPassword, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/utils/firebase";
 import { useRouter } from "next/navigation";
@@ -52,34 +52,40 @@ export default function SignupPage() {
     }
   };
 
-  const handleGoogleSignup = async () => {
-    setError("");
+  // Handle redirect result on page load
+  useEffect(() => {
     setLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      const userRef = doc(db, "users", user.uid);
-      const userSnap = await getDoc(userRef);
-      
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          uid: user.uid,
-          name: user.displayName,
-          email: user.email,
-          phoneNumber: user.phoneNumber || phoneNumber || "",
-          role: accountType,
-          createdAt: new Date().toISOString(),
-        });
-      }
-      
-      router.push("/profile");
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result?.user) {
+          const user = result.user;
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+          if (!userSnap.exists()) {
+            await setDoc(userRef, {
+              uid: user.uid,
+              name: user.displayName,
+              email: user.email,
+              phoneNumber: user.phoneNumber || "",
+              role: accountType,
+              createdAt: new Date().toISOString(),
+            });
+          }
+          router.push("/profile");
+        }
+      })
+      .catch((err) => {
+        if (err.code !== "auth/popup-closed-by-user") {
+          setError(err.message);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [router, accountType]);
+
+  const handleGoogleSignup = () => {
+    setError("");
+    const provider = new GoogleAuthProvider();
+    signInWithRedirect(auth, provider);
   };
 
   return (
