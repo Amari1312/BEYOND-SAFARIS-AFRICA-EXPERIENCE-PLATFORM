@@ -160,8 +160,8 @@ export default function UserDashboardPage() {
                         <td>{booking.guests}</td>
                         <td>
                           <span className={`rounded-md px-2 py-1 font-medium ${booking.status === "Confirmed" ? "bg-emerald-50 text-emerald-800" :
-                              booking.status === "Pending" ? "bg-amber-50 text-amber-800" :
-                                "bg-red-50 text-red-800"
+                            booking.status === "Pending" ? "bg-amber-50 text-amber-800" :
+                              "bg-red-50 text-red-800"
                             }`}>
                             {booking.status}
                           </span>

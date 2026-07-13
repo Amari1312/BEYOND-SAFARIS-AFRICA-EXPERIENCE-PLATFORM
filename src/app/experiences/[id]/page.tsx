@@ -21,7 +21,7 @@ export default function ExperienceDetailPage() {
   const [experience, setExperience] = useState<Experience | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<{name?: string; email?: string; phoneNumber?: string} | null>(null);
+  const [userProfile, setUserProfile] = useState<{ name?: string; email?: string; phoneNumber?: string } | null>(null);
 
   // Booking form state
   const [date, setDate] = useState("");

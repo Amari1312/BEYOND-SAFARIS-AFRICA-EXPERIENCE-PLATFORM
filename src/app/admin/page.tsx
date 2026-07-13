@@ -38,16 +38,30 @@ export default function AdminDashboardPage() {
             getDocs(collection(db, "businesses")),
           ]);
 
+          // Build users list and dedupe by email so the admin recent list doesn't show
+          // multiple accounts with the same email address back-to-back.
+          const usersList = usersSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+          const dedupedByEmailMap = new Map<string, any>();
+          // iterate in order and let later entries overwrite earlier ones; then take values
+          usersList.forEach((u) => {
+            if (u && u.email) dedupedByEmailMap.set(String(u.email).toLowerCase(), u);
+          });
+          const uniqueUsers = Array.from(dedupedByEmailMap.values());
+
+          // If there's a separate `businesses` collection use its size; otherwise
+          // count users with role === 'BusinessOwner' as active businesses.
+          const businessCountFromUsers = uniqueUsers.filter((u) => u.role === "BusinessOwner").length;
+          const businessCount = bizSnap.size || businessCountFromUsers;
+
           setStats({
             users: usersSnap.size,
             experiences: expSnap.size,
             bookings: bookSnap.size,
-            businesses: bizSnap.size,
+            businesses: businessCount,
           });
 
-          // Most recent 5 users
-          const allUsers = usersSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setRecentUsers(allUsers.slice(-5).reverse());
+          // Most recent 5 unique users (by email)
+          setRecentUsers(uniqueUsers.slice(-5).reverse());
 
           setLoading(false);
         } catch (error) {

@@ -273,8 +273,8 @@ export default function BusinessDashboardPage() {
                         {booking.date} · {booking.guests} guests · {booking.id.slice(0, 8)}
                       </p>
                       <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-semibold ${booking.status === "Confirmed" ? "bg-emerald-100 text-emerald-700" :
-                          booking.status === "Pending" ? "bg-amber-100 text-amber-700" :
-                            "bg-red-100 text-red-700"
+                        booking.status === "Pending" ? "bg-amber-100 text-amber-700" :
+                          "bg-red-100 text-red-700"
                         }`}>{booking.status}</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
