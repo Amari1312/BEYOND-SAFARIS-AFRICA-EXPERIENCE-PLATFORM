@@ -58,16 +58,16 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
 
   const links = isAdmin
     ? [
-        { href: "/admin", label: "Overview" },
-      ]
+      { href: "/admin", label: "Overview" },
+    ]
     : [
-        { href: user ? "/profile" : "/", label: "Home" },
-        { href: "/about", label: "About" },
-        { href: "/experiences", label: "Experiences" },
-        { href: "/events", label: "Events" },
-        { href: "/plan", label: "Plan" },
-        { href: "/contact", label: "Contact" },
-      ];
+      { href: user ? "/profile" : "/", label: "Home" },
+      { href: "/about", label: "About" },
+      { href: "/experiences", label: "Experiences" },
+      { href: "/events", label: "Events" },
+      { href: "/plan", label: "Plan" },
+      { href: "/contact", label: "Contact" },
+    ];
 
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-stone-50/95 backdrop-blur">
@@ -89,9 +89,9 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
             <>
               <form onSubmit={handleSearch} className="hidden w-full max-w-xs items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 lg:flex">
                 <Search size={16} />
-                <input 
-                  type="text" 
-                  placeholder="Search destinations" 
+                <input
+                  type="text"
+                  placeholder="Search destinations"
                   className="bg-transparent outline-none w-full"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
