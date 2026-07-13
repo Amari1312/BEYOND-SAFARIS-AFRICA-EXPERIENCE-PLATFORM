@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, Menu, Search, User, LogOut } from "lucide-react";
+import { Heart, Menu, Search, User, LogOut, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { auth, db } from "@/utils/firebase";
@@ -19,6 +19,7 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(variant === "admin");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -35,6 +36,7 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
 
   const handleLogout = async () => {
     await signOut(auth);
+    setIsMobileMenuOpen(false);
     router.push("/login");
   };
 
@@ -42,7 +44,16 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
     e.preventDefault();
     if (searchQuery.trim()) {
       router.push(`/experiences?search=${encodeURIComponent(searchQuery)}`);
+      setIsMobileMenuOpen(false);
     }
+  };
+
+  const handleToggleMobileMenu = () => {
+    setIsMobileMenuOpen((prev) => !prev);
+  };
+
+  const handleCloseMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   const links = isAdmin
@@ -114,9 +125,90 @@ export function Navbar({ variant = "default", profileHref }: NavbarProps) {
           )}
         </div>
 
-        <button className="rounded-lg p-2 text-slate-950 hover:bg-green-100 md:hidden" aria-label="Menu">
-          <Menu size={22} />
+        <button
+          onClick={handleToggleMobileMenu}
+          className="rounded-lg p-2 text-slate-950 hover:bg-green-100 md:hidden"
+          aria-label="Menu"
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="mobile-menu"
+          type="button"
+        >
+          {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
+      </div>
+
+      <div
+        id="mobile-menu"
+        className={`md:hidden ${isMobileMenuOpen ? "block" : "hidden"} border-t border-slate-200 bg-stone-50/95`}
+      >
+        <div className="space-y-3 px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 font-bold text-slate-950">
+              <Image src="/logos/logo.jpg" alt="Beyond Safari Logo" width={36} height={36} className="rounded-lg" />
+              <span className="text-sm">Menu</span>
+            </div>
+            <button
+              onClick={handleCloseMobileMenu}
+              className="rounded-lg p-2 text-slate-950 hover:bg-green-100"
+              aria-label="Close menu"
+              type="button"
+            >
+              <X size={22} />
+            </button>
+          </div>
+
+          {!isAdmin ? (
+            <form onSubmit={handleSearch} className="flex w-full flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-500">
+              <label htmlFor="mobile-search" className="sr-only">Search destinations</label>
+              <div className="flex items-center gap-2">
+                <Search size={16} />
+                <input
+                  id="mobile-search"
+                  type="text"
+                  placeholder="Search destinations"
+                  className="bg-transparent outline-none w-full"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="rounded-lg bg-slate-950 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                Search
+              </button>
+            </form>
+          ) : null}
+
+          <nav className="flex flex-col gap-2 text-slate-950">
+            {links.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                onClick={handleCloseMobileMenu}
+                className="rounded-lg px-3 py-2 font-semibold hover:bg-green-100"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex flex-col gap-2 border-t border-slate-200 pt-3">
+            <Link
+              href={user ? (isAdmin ? "/admin" : profileHref ?? "/profile") : "/login"}
+              onClick={handleCloseMobileMenu}
+              className="rounded-lg px-3 py-2 text-slate-950 hover:bg-green-100"
+            >
+              {user ? "Profile" : "Login"}
+            </Link>
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-2 text-left text-slate-950 hover:bg-red-100"
+                type="button"
+              >
+                Logout
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </header>
   );
