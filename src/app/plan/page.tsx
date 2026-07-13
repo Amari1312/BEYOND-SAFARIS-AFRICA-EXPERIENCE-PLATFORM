@@ -112,7 +112,7 @@ export default function PlanPage() {
         <section className="rounded-4xl border border-emerald-100 bg-white/85 p-6 shadow-sm backdrop-blur sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
-              
+
               <h1 className="mt-4 text-3xl font-bold text-slate-950 sm:text-4xl">
                 Plan Your Next Adventure
               </h1>
@@ -211,11 +211,10 @@ export default function PlanPage() {
                     key={option}
                     type="button"
                     onClick={() => setSelectedPreference(option)}
-                    className={`rounded-full px-3 py-2 text-sm font-medium transition ${
-                      selectedPreference === option
+                    className={`rounded-full px-3 py-2 text-sm font-medium transition ${selectedPreference === option
                         ? "bg-emerald-600 text-white"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
+                      }`}
                   >
                     {option}
                   </button>
@@ -231,7 +230,7 @@ export default function PlanPage() {
           <aside className="flex flex-col gap-6">
             <section className="rounded-3xl border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
               <div className="flex items-center justify-between gap-4">
-                
+
                 <div className="rounded-full bg-white/10 p-2">
                   <CalendarDays size={18} />
                 </div>
