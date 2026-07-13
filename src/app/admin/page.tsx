@@ -6,7 +6,7 @@ import { Navbar } from "@/components/navbar";
 import { StatCard } from "@/components/stat-card";
 import { auth, db } from "@/utils/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 export default function AdminDashboardPage() {
@@ -21,58 +21,88 @@ export default function AdminDashboardPage() {
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
 
   useEffect(() => {
+    let usersUnsub: (() => void) | null = null;
+    let expUnsub: (() => void) | null = null;
+    let bookUnsub: (() => void) | null = null;
+    let bizUnsub: (() => void) | null = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          if (!userDoc.exists() || userDoc.data().role !== "Admin") {
-            router.push("/profile");
-            return;
-          }
+      if (!user) {
+        router.push("/login");
+        return;
+      }
 
-          // Fetch real counts from Firestore
-          const [usersSnap, expSnap, bookSnap, bizSnap] = await Promise.all([
-            getDocs(collection(db, "users")),
-            getDocs(collection(db, "experiences")),
-            getDocs(collection(db, "bookings")),
-            getDocs(collection(db, "businesses")),
-          ]);
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists() || userDoc.data().role !== "Admin") {
+          router.push("/profile");
+          return;
+        }
 
-          // Build users list and dedupe by email so the admin recent list doesn't show
-          // multiple accounts with the same email address back-to-back.
-          const usersList = usersSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-          const dedupedByEmailMap = new Map<string, any>();
-          // iterate in order and let later entries overwrite earlier ones; then take values
-          usersList.forEach((u) => {
-            if (u && u.email) dedupedByEmailMap.set(String(u.email).toLowerCase(), u);
+        const usersQuery = collection(db, "users");
+        const experiencesQuery = collection(db, "experiences");
+        const bookingsQuery = collection(db, "bookings");
+        const businessesQuery = collection(db, "businesses");
+
+        const updateCounts = (usersSnap: any, expSize: number, bookSize: number, bizSize: number) => {
+          const usersList = usersSnap.docs.map((d: any) => ({ id: d.id, ...(d.data() as any) }));
+          const dedupedByEmail = new Map<string, any>();
+          usersList.forEach((u: any) => {
+            if (u?.email) dedupedByEmail.set(String(u.email).toLowerCase(), u);
           });
-          const uniqueUsers = Array.from(dedupedByEmailMap.values());
+          const uniqueUsers = Array.from(dedupedByEmail.values());
 
-          // If there's a separate `businesses` collection use its size; otherwise
-          // count users with role === 'BusinessOwner' as active businesses.
-          const businessCountFromUsers = uniqueUsers.filter((u) => u.role === "BusinessOwner").length;
-          const businessCount = bizSnap.size || businessCountFromUsers;
+          const businessCountFromUsers = uniqueUsers.filter((u: any) => u.role === "BusinessOwner").length;
+          const businessCount = bizSize || businessCountFromUsers;
 
           setStats({
             users: usersSnap.size,
-            experiences: expSnap.size,
-            bookings: bookSnap.size,
+            experiences: expSize,
+            bookings: bookSize,
             businesses: businessCount,
           });
-
-          // Most recent 5 unique users (by email)
           setRecentUsers(uniqueUsers.slice(-5).reverse());
+        };
 
+        let currentExpSize = 0;
+        let currentBookSize = 0;
+        let currentBizSize = 0;
+
+        usersUnsub = onSnapshot(usersQuery, (usersSnap) => {
+          currentExpSize = currentExpSize ?? 0;
+          currentBookSize = currentBookSize ?? 0;
+          currentBizSize = currentBizSize ?? 0;
+          updateCounts(usersSnap, currentExpSize, currentBookSize, currentBizSize);
           setLoading(false);
-        } catch (error) {
-          console.error("Admin fetch error:", error);
-          router.push("/profile");
-        }
-      } else {
-        router.push("/login");
+        });
+
+        expUnsub = onSnapshot(experiencesQuery, (expSnap) => {
+          currentExpSize = expSnap.size;
+          setStats((prev) => ({ ...prev, experiences: expSnap.size }));
+        });
+
+        bookUnsub = onSnapshot(bookingsQuery, (bookSnap) => {
+          currentBookSize = bookSnap.size;
+          setStats((prev) => ({ ...prev, bookings: bookSnap.size }));
+        });
+
+        bizUnsub = onSnapshot(businessesQuery, (bizSnap) => {
+          currentBizSize = bizSnap.size;
+          setStats((prev) => ({ ...prev, businesses: bizSnap.size }));
+        });
+      } catch (error) {
+        console.error("Admin fetch error:", error);
+        router.push("/profile");
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribe();
+      if (usersUnsub) usersUnsub();
+      if (expUnsub) expUnsub();
+      if (bookUnsub) bookUnsub();
+      if (bizUnsub) bizUnsub();
+    };
   }, [router]);
 
   if (loading) {
