@@ -130,11 +130,10 @@ export default function AdminDashboardPage() {
                       <td className="py-3 font-medium">{u.name || "—"}</td>
                       <td className="text-slate-600">{u.email || "—"}</td>
                       <td>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          u.role === "Admin" ? "bg-purple-100 text-purple-700" :
-                          u.role === "BusinessOwner" ? "bg-teal-100 text-teal-700" :
-                          "bg-slate-100 text-slate-700"
-                        }`}>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${u.role === "Admin" ? "bg-purple-100 text-purple-700" :
+                            u.role === "BusinessOwner" ? "bg-teal-100 text-teal-700" :
+                              "bg-slate-100 text-slate-700"
+                          }`}>
                           {u.role || "Tourist"}
                         </span>
                       </td>
