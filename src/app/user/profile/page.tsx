@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { StatCard } from "@/components/stat-card";
-import { auth } from "@/utils/firebase";
+import { auth, db } from "@/utils/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { getUserProfile, getUserBookings } from "@/utils/firebase-data";
+import { addDoc, collection, doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import type { Booking, UserProfile } from "@/types";
 
@@ -17,10 +18,15 @@ export default function UserDashboardPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, { rating: number; comment: string }>>({});
+  const [reviewSubmittingId, setReviewSubmittingId] = useState<string | null>(null);
+  const [reviewMessage, setReviewMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        setCurrentUserId(user.uid);
         try {
           const userProfile = await getUserProfile(user.uid);
           setProfile(userProfile);
@@ -38,6 +44,63 @@ export default function UserDashboardPage() {
 
     return () => unsubscribe();
   }, [router]);
+
+  const handleSubmitReview = async (booking: Booking) => {
+    const draft = reviewDrafts[booking.id];
+    if (!draft || draft.rating < 1 || draft.rating > 5) {
+      setReviewMessage("Please choose a rating before submitting.");
+      return;
+    }
+    if (!draft.comment.trim()) {
+      setReviewMessage("Please add a short review comment.");
+      return;
+    }
+
+    setReviewSubmittingId(booking.id);
+    setReviewMessage("");
+
+    try {
+      const experienceDoc = await getDoc(doc(db, "experiences", booking.experienceId || ""));
+      const existingData = experienceDoc.exists() ? experienceDoc.data() : null;
+      const existingReviews = Number(existingData?.reviews || 0);
+      const existingRating = Number(existingData?.rating || 0);
+      const nextReviews = existingReviews + 1;
+      const nextRating = existingReviews === 0
+        ? draft.rating
+        : Number(((existingRating * existingReviews) + draft.rating) / nextReviews).toFixed(1);
+
+      await addDoc(collection(db, "reviews"), {
+        bookingId: booking.id,
+        experienceId: booking.experienceId,
+        experienceTitle: booking.experience || "Experience",
+        userId: currentUserId,
+        hostId: booking.hostId || "",
+        rating: draft.rating,
+        comment: draft.comment.trim(),
+        createdAt: serverTimestamp(),
+      });
+
+      await updateDoc(doc(db, "bookings", booking.id), {
+        reviewed: true,
+        reviewSubmittedAt: serverTimestamp(),
+      });
+
+      await updateDoc(doc(db, "experiences", booking.experienceId || ""), {
+        reviews: nextReviews,
+        rating: Number(nextRating),
+      });
+
+      const refreshedBookings = await getUserBookings(currentUserId || "");
+      setUserBookings(refreshedBookings);
+      setReviewDrafts((prev) => ({ ...prev, [booking.id]: { rating: 5, comment: "" } }));
+      setReviewMessage("Review submitted successfully.");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setReviewMessage("Unable to submit your review right now.");
+    } finally {
+      setReviewSubmittingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -130,10 +193,54 @@ export default function UserDashboardPage() {
             </div>
           </aside>
         </section>
-        <section className="mt-8">
-          <h2 className="text-xl font-semibold">Wishlist</h2>
-          <div className="mt-4 text-sm text-slate-500 bg-white rounded-lg p-6 border border-slate-200">
-            Your wishlist is currently empty. Explore experiences to add them here!
+        <section className="mt-8 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold">Leave a review</h2>
+            {reviewMessage ? <p className="text-sm text-emerald-600">{reviewMessage}</p> : null}
+          </div>
+          <div className="mt-4 grid gap-4">
+            {userBookings.filter((booking) => booking.status === "Confirmed" && !booking.reviewed).length === 0 ? (
+              <p className="text-sm text-slate-500">Confirmed bookings will appear here once you are ready to leave feedback.</p>
+            ) : (
+              userBookings
+                .filter((booking) => booking.status === "Confirmed" && !booking.reviewed)
+                .map((booking) => (
+                  <div key={booking.id} className="rounded-lg border border-slate-200 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <p className="font-semibold">{booking.experience || "Experience"}</p>
+                        <p className="text-sm text-slate-500">{booking.date} · {booking.guests} guests</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 grid gap-3 md:grid-cols-[140px_1fr_auto]">
+                      <label className="text-sm font-medium text-slate-700">
+                        Rating
+                        <select
+                          className="mt-1 min-h-10 w-full rounded-lg border border-slate-300 px-3"
+                          value={reviewDrafts[booking.id]?.rating ?? 5}
+                          onChange={(event) => setReviewDrafts((prev) => ({ ...prev, [booking.id]: { ...prev[booking.id], rating: Number(event.target.value) } }))}
+                        >
+                          {[5, 4, 3, 2, 1].map((value) => (
+                            <option key={value} value={value}>{value} star{value > 1 ? "s" : ""}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-sm font-medium text-slate-700">
+                        Review
+                        <textarea
+                          className="mt-1 min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2"
+                          placeholder="Share what made your experience special"
+                          value={reviewDrafts[booking.id]?.comment ?? ""}
+                          onChange={(event) => setReviewDrafts((prev) => ({ ...prev, [booking.id]: { ...prev[booking.id], comment: event.target.value, rating: prev[booking.id]?.rating ?? 5 } }))}
+                        />
+                      </label>
+                      <Button onClick={() => handleSubmitReview(booking)} disabled={reviewSubmittingId === booking.id}>
+                        {reviewSubmittingId === booking.id ? "Submitting..." : "Submit review"}
+                      </Button>
+                    </div>
+                  </div>
+                ))
+            )}
           </div>
         </section>
       </main>

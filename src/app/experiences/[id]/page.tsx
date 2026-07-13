@@ -76,6 +76,7 @@ export default function ExperienceDetailPage() {
         guests,
         amount: (experience?.price || 0) * guests,
         status: "Pending",
+        reviewed: false,
         createdAt: serverTimestamp(),
       });
 

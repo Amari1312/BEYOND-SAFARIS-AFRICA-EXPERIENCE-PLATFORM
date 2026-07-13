@@ -16,11 +16,30 @@ export type Experience = {
 
 export type Booking = {
   id: string;
-  experience: string;
+  experience?: string;
+  experienceId?: string;
+  hostId?: string;
+  userId?: string;
+  userName?: string;
   date: string;
   guests: number;
-  status: "Confirmed" | "Pending" | "Cancelled";
+  status: "Confirmed" | "Pending" | "Cancelled" | "Denied";
   amount: number;
+  reviewed?: boolean;
+  createdAt?: unknown;
+  updatedAt?: unknown;
+};
+
+export type Review = {
+  id: string;
+  bookingId: string;
+  experienceId: string;
+  experienceTitle: string;
+  userId: string;
+  hostId?: string;
+  rating: number;
+  comment: string;
+  createdAt?: unknown;
 };
 
 export type { UserProfile } from "./user";

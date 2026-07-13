@@ -8,7 +8,7 @@ import { Navbar } from "@/components/navbar";
 import { StatCard } from "@/components/stat-card";
 import { auth, db, storage } from "@/utils/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, getDocs, query, where, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useRouter } from "next/navigation";
 import type { UserProfile } from "@/types";
@@ -24,6 +24,7 @@ export default function BusinessDashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState("");
   const [formError, setFormError] = useState("");
+  const [bookingActionId, setBookingActionId] = useState<string | null>(null);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -64,6 +65,24 @@ export default function BusinessDashboardPage() {
     if (file) {
       setImageFile(file);
       setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleBookingAction = async (bookingId: string, nextStatus: "Confirmed" | "Denied") => {
+    setBookingActionId(bookingId);
+    try {
+      await updateDoc(doc(db, "bookings", bookingId), {
+        status: nextStatus,
+        updatedAt: serverTimestamp(),
+      });
+      await fetchData(currentUser!.uid);
+      setSuccess(nextStatus === "Confirmed" ? "Booking approved." : "Booking denied.");
+      setTimeout(() => setSuccess(""), 4000);
+    } catch (error) {
+      console.error("Error updating booking status:", error);
+      setFormError("Unable to update booking status right now.");
+    } finally {
+      setBookingActionId(null);
     }
   };
 
@@ -239,6 +258,8 @@ export default function BusinessDashboardPage() {
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h2 className="text-xl font-semibold">Booking management</h2>
             <div className="mt-4 grid gap-3">
+              {success && <p className="text-sm font-medium text-emerald-600">{success}</p>}
+              {formError && <p className="text-sm font-medium text-red-500">{formError}</p>}
               {bookings.length === 0 ? (
                 <div className="py-6 text-center text-sm text-slate-500">
                   No active bookings yet.
@@ -256,9 +277,19 @@ export default function BusinessDashboardPage() {
                             "bg-red-100 text-red-700"
                         }`}>{booking.status}</span>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="secondary">Message</Button>
-                      <Button>Manage</Button>
+                    <div className="flex flex-wrap gap-2">
+                      {booking.status === "Pending" ? (
+                        <>
+                          <Button variant="secondary" onClick={() => handleBookingAction(booking.id, "Denied")} disabled={bookingActionId === booking.id}>
+                            {bookingActionId === booking.id ? "Working..." : "Deny"}
+                          </Button>
+                          <Button onClick={() => handleBookingAction(booking.id, "Confirmed")} disabled={bookingActionId === booking.id}>
+                            {bookingActionId === booking.id ? "Working..." : "Approve"}
+                          </Button>
+                        </>
+                      ) : (
+                        <span className="text-sm font-medium text-slate-500">{booking.status}</span>
+                      )}
                     </div>
                   </div>
                 ))
