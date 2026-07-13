@@ -1,6 +1,6 @@
-import { collection, query, getDocs, doc, getDoc, onSnapshot, Query, DocumentSnapshot } from "firebase/firestore";
+import { collection, query, getDocs, doc, getDoc, onSnapshot, where, Query, DocumentSnapshot } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Experience, Booking } from "@/types";
+import type { Experience, Booking, Review } from "@/types";
 import type { UserProfile } from "@/types/user";
 
 /**
@@ -197,6 +197,21 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return null;
+  }
+}
+
+export async function getReviewsForExperience(experienceId: string): Promise<Review[]> {
+  try {
+    const reviewsCollection = collection(db, "reviews");
+    const reviewsQuery = query(reviewsCollection, where("experienceId", "==", experienceId));
+    const snapshot = await getDocs(reviewsQuery);
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Omit<Review, "id">),
+    }));
+  } catch (error) {
+    console.error(`Error fetching reviews for experience ${experienceId}:`, error);
+    return [];
   }
 }
 

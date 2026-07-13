@@ -13,9 +13,20 @@ import { FormField } from "@/components/form-field";
 import { Navbar } from "@/components/navbar";
 import { Button } from "@/components/ui/button";
 import { ExperienceCard } from "@/components/experience-card";
-import { getExperiences, getEvents } from "@/utils/firebase-data";
+import { auth } from "@/utils/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { getExperiences, getEvents, getUserProfile } from "@/utils/firebase-data";
 import { Footer } from "@/components/footer";
 import type { Experience } from "@/types";
+import type { UserProfile } from "@/types/user";
+
+type EventItem = {
+  id: string;
+  title?: string;
+  location?: string;
+  date?: string;
+  description?: string;
+};
 
 const preferenceOptions = ["Beaches", "Culture", "Adventure", "Food", "Wildlife", "Scenic"];
 
@@ -38,9 +49,6 @@ const itinerary = [
 ];
 
 const initialForm = {
-  name: "",
-  email: "",
-  phone: "",
   budget: "",
   destination: "Diani Beach",
   category: "Adventure",
@@ -52,7 +60,8 @@ export default function PlanPage() {
   const [form, setForm] = useState(initialForm);
   const [selectedPreference, setSelectedPreference] = useState("Adventure");
   const [experiences, setExperiences] = useState<Experience[]>([]);
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -66,7 +75,18 @@ export default function PlanPage() {
       setEvents(eventData);
       setLoading(false);
     };
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const profile = await getUserProfile(user.uid);
+        setUserProfile(profile);
+      } else {
+        setUserProfile(null);
+      }
+    });
+
     fetchData();
+    return () => unsubscribe();
   }, []);
 
   const handleChange = (
@@ -77,8 +97,8 @@ export default function PlanPage() {
   };
 
   const summaryItems = [
-    { label: "Traveler", value: form.name || "Your name" },
-    { label: "Email", value: form.email || "your@email.com" },
+    { label: "Traveler", value: userProfile?.name || "Your name" },
+    { label: "Email", value: userProfile?.email || "your@email.com" },
     { label: "Budget", value: form.budget || "Flexible" },
     { label: "Destination", value: form.destination },
     { label: "Style", value: selectedPreference },
@@ -126,29 +146,6 @@ export default function PlanPage() {
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <FormField
-                label="Name"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Enter your name"
-              />
-              <FormField
-                label="Email"
-                type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-              />
-              <FormField
-                label="Phone"
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                placeholder="Enter your phone number"
-              />
               <FormField
                 label="Budget"
                 name="budget"

@@ -3,22 +3,22 @@
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
-import { getExperienceById } from "@/utils/firebase-data";
+import { getExperienceById, getReviewsForExperience, getUserProfile } from "@/utils/firebase-data";
 import { CalendarDays, Heart, MapPin, ShieldCheck, Star, Users } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import type { Experience } from "@/types";
+import type { Experience, Review } from "@/types";
 import { auth, db } from "@/utils/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged, type User } from "firebase/auth";
-import { getUserProfile } from "@/utils/firebase-data";
 
 export default function ExperienceDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
   const [experience, setExperience] = useState<Experience | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<{ name?: string; email?: string; phoneNumber?: string } | null>(null);
@@ -43,13 +43,21 @@ export default function ExperienceDetailPage() {
 
   useEffect(() => {
     if (!id) return;
+
     const fetchExperience = async () => {
       setLoading(true);
       const data = await getExperienceById(id);
       setExperience(data);
       setLoading(false);
     };
+
+    const fetchReviews = async () => {
+      const reviewData = await getReviewsForExperience(id);
+      setReviews(reviewData);
+    };
+
     fetchExperience();
+    fetchReviews();
   }, [id]);
 
   const handleBook = async (e: React.FormEvent) => {
@@ -194,8 +202,22 @@ export default function ExperienceDetailPage() {
             </div>
             <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-xl font-semibold">Reviews</h2>
-              <div className="mt-4 text-sm text-slate-500">
-                No reviews yet. Be the first to book!
+              <div className="mt-4 space-y-4 text-sm text-slate-500">
+                {reviews.length === 0 ? (
+                  <p>No reviews yet. Be the first to book!</p>
+                ) : (
+                  reviews.map((review) => (
+                    <div key={review.id} className="rounded-2xl bg-slate-50 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold text-slate-900">{review.experienceTitle}</p>
+                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                          {review.rating} / 5
+                        </span>
+                      </div>
+                      <p className="mt-2 text-slate-600">{review.comment}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
